@@ -41,7 +41,7 @@ export default function Workspace() {
   useEffect(() => {
     const s = getSocket();
     const handleProgress = ({ step, message }: { step: number; message: string }) => {
-      setGenerationStep(`Step ${step}/3 — ${message}`);
+      setGenerationStep(`Step ${step}/4 — ${message}`);
     };
     s.on('ai:progress', handleProgress);
     return () => {

@@ -77,11 +77,20 @@ export const generate = async (req: Request, res: Response) => {
   };
 
   try {
-    // Step 1: Circuit planning (reasoning tier)
-    sendProgress(1, 'Designing circuit plan & mapping pins (DeepSeek-R1)...');
+    // Step 1: Component Extraction & Analysis
+    sendProgress(1, 'Analyzing request and identifying hardware components...');
+    const fastCompResp = await aiService.fast(
+      `Identify the exact components needed for this IoT prompt on ${platform}. Return ONLY a JSON list of objects: [{"type":"led|button|dht22|...","label":"..."}]`,
+      [{ role: 'user', content: prompt }],
+      512
+    );
+    const initialComps = safeParseJSON(fastCompResp.content) || [];
+
+    // Step 2: Circuit planning (reasoning tier)
+    sendProgress(2, 'Designing circuit plan and mapping pins (DeepSeek-R1)...');
     const circuitResp = await aiService.reasoning(
       SYSTEM_CIRCUIT_PLANNER,
-      [{ role: 'user', content: buildCircuitPrompt(prompt, platform as Platform) }],
+      [{ role: 'user', content: buildCircuitPrompt(`${prompt}. Components pre-identified: ${JSON.stringify(initialComps)}`, platform as Platform) }],
       4096
     );
 
@@ -92,8 +101,8 @@ export const generate = async (req: Request, res: Response) => {
 
     const plan = circuitData as any;
 
-    // Step 2: Firmware generation (code tier)
-    sendProgress(2, 'Generating embedded firmware source code (Gemma 4)...');
+    // Step 3: Firmware generation (code tier)
+    sendProgress(3, 'Generating embedded firmware source code (Gemma 4)...');
     const codeResp = await aiService.code(
       SYSTEM_CODE_GEN(platform as Platform),
       [{
@@ -103,8 +112,8 @@ export const generate = async (req: Request, res: Response) => {
       6144
     );
 
-    // Step 3: Finalizing and rendering
-    sendProgress(3, 'Finalizing diagram schematic and telemetry metadata...');
+    // Step 4: Verification and visual layout mapping
+    sendProgress(4, 'Mapping visual wiring schematic & final verification...');
     const id = uuid();
     const result = {
       id,
