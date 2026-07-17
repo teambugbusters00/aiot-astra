@@ -155,6 +155,10 @@ async function boot() {
       logger.info(`║  WS    →  ws://localhost:${PORT}            ║`);
       logger.info(`╚══════════════════════════════════════════╝`);
     });
+    // Set HTTP Server Timeouts to 5 minutes to support slow multi-tier AI reasoning
+    server.timeout = 300000;
+    server.keepAliveTimeout = 300000;
+    server.headersTimeout = 310000;
   } else {
     logger.info('Vercel serverless environment detected - skipping server.listen()');
   }
