@@ -190,3 +190,36 @@ To enable compilation of firmware code into real executables:
 1. Flash a physical board (e.g. ESP32 NodeMCU) using the generated code.
 2. Configure the hardware client to connect to your Mosquitto broker IP.
 3. Publish data on topics such as `aiot/device/temp` to watch the frontend charts update in real-time.
+
+### Task 4: Set Up a Python Virtual Environment (`.venv`) for Firmware Tooling
+Since flashing and compilation tools (such as **PlatformIO** and **esptool**) rely on Python packages, it is recommended to install them in a localized virtual environment:
+
+1. **Create the Virtual Environment** in the project root:
+   ```bash
+   python -m venv .venv
+   ```
+
+2. **Activate the Virtual Environment**:
+   * **Windows (PowerShell)**:
+     ```powershell
+     .venv\Scripts\Activate.ps1
+     ```
+   * **Windows (CMD)**:
+     ```cmd
+     .venv\Scripts\activate.bat
+     ```
+   * **macOS / Linux**:
+     ```bash
+     source .venv/bin/activate
+     ```
+
+3. **Install Dependencies** using `requirements.txt`:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Verify Installation**:
+   ```bash
+   pio --version
+   ```
+
