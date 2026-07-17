@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-bg text-slate-300 font-mono;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.022) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #030B14; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.25); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.5); }
+}
+
+@layer components {
+  .card {
+    @apply bg-card border border-cyan/10 rounded p-6 transition-all duration-200;
+  }
+  .card:hover { @apply border-cyan/20; box-shadow: 0 0 28px rgba(0,229,255,0.04); }
+
+  .btn-primary {
+    @apply bg-cyan text-bg font-ui font-bold text-sm uppercase tracking-widest px-6 py-3 rounded-sm
+    transition-all duration-200 hover:opacity-80 active:scale-95;
+  }
+  .btn-secondary {
+    @apply border border-cyan/30 text-cyan font-ui font-semibold text-sm uppercase tracking-widest px-6 py-3 rounded-sm
+    transition-all duration-200 hover:bg-cyan/10 active:scale-95;
+  }
+  .btn-ghost {
+    @apply text-slate-400 font-ui text-sm px-4 py-2 rounded
+    transition-colors hover:text-cyan hover:bg-cyan/5;
+  }
+
+  .tag {
+    @apply inline-block font-ui text-xs font-semibold px-3 py-1 rounded-sm border;
+  }
+  .tag-cyan  { @apply text-cyan  border-cyan/25  bg-cyan/5;  }
+  .tag-green { @apply text-green border-green/25 bg-green/5; }
+  .tag-amber { @apply text-amber border-amber/25 bg-amber/5; }
+  .tag-red   { @apply text-red   border-red/25   bg-red/5;   }
+
+  .sec-title {
+    @apply font-ui text-xs font-semibold tracking-widest uppercase text-cyan
+    flex items-center gap-3 mb-8;
+  }
+  .sec-title::after {
+    content: '';
+    @apply flex-1 h-px bg-gradient-to-r from-cyan/30 to-transparent;
+  }
+
+  .input {
+    @apply w-full bg-surface border border-cyan/15 rounded px-4 py-3 text-sm font-mono text-slate-200
+    focus:outline-none focus:border-cyan/40 focus:ring-1 focus:ring-cyan/20 transition-all;
+  }
+
+  .select {
+    @apply w-full bg-surface border border-cyan/15 rounded px-4 py-3 text-sm font-mono text-slate-200
+    focus:outline-none focus:border-cyan/40 cursor-pointer;
+  }
+}

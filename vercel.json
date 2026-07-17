@@ -1,0 +1,52 @@
+{
+  "name": "ai-iot-astra",
+  "version": 2,
+  "buildCommand": "cd backend && npm install && cd ../frontend && npm install && npm run build",
+  "outputDirectory": "backend/public",
+  "rewrites": [
+    {
+      "source": "/auth/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/ai/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/simulation/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/mqtt/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/deploy/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/projects/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/serial/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/billing/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/health",
+      "destination": "/api"
+    },
+    {
+      "source": "/socket.io/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
+}
