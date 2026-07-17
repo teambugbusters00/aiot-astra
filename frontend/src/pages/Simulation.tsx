@@ -5,6 +5,7 @@ import { useStore } from '../lib/store';
 import { simAPI } from '../lib/api';
 import { joinSimulation } from '../hooks/useSocket';
 import { getSocket } from '../hooks/useSocket';
+import SimCanvas from '../simulator/canvas/SimCanvas';
 
 // ── Virtual LED ───────────────────────────────────────────────────
 function VirtualLED({ label, pin, active, color = 'red' }: { label: string; pin: number; active: boolean; color?: string }) {
@@ -79,7 +80,7 @@ export default function Simulation() {
   const { activeProject, simSessionId, setSimSessionId, simRunning, setSimRunning, serialLog, addSerialLine, clearSerial } = useStore();
   const [compiling, setCompiling]     = useState(false);
   const [compileErr, setCompileErr]   = useState('');
-  const [pinStates, setPinStates]     = useState<Record<number, boolean>>({});
+  const [pinStates, setPinStates]     = useState<Record<string, boolean | number>>({});
   const [potValues, setPotValues]     = useState<Record<string, number>>({});
   const serialRef                     = useRef<HTMLDivElement>(null);
 
@@ -91,8 +92,8 @@ export default function Simulation() {
   // Socket pin updates
   useEffect(() => {
     const s = getSocket();
-    s.on('pin:update', ({ pin, value }: { pin: number; value: boolean }) => {
-      setPinStates((p) => ({ ...p, [pin]: value }));
+    s.on('pin:update', ({ pin, value }: { pin: string | number; value: boolean | number }) => {
+      setPinStates((p) => ({ ...p, [String(pin)]: value }));
     });
     s.on('serial:data', ({ data }: { data: string }) => addSerialLine(data));
     return () => { s.off('pin:update'); s.off('serial:data'); };
@@ -202,52 +203,27 @@ export default function Simulation() {
                 </motion.div>
               )}
 
-              {/* Virtual LEDs */}
-              {leds.length > 0 && (
-                <div>
-                  <div className="text-xs font-ui font-semibold uppercase text-cyan/70 mb-4">LEDs</div>
-                  <div className="flex gap-8 flex-wrap mb-6">
-                    {leds.map((led: any, i: number) => (
-                      <VirtualLED key={i}
-                        label={led.label || `LED ${i + 1}`}
-                        pin={led.pin || 13}
-                        active={pinStates[led.pin || 13] ?? false}
-                        color={led.color || 'red'}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Interactive Visual Canvas */}
+              <div className="mt-4">
+                <SimCanvas
+                  platform={activeProject.platform}
+                  components={activeProject.components || []}
+                  pinStates={pinStates}
+                />
+              </div>
 
-              {/* Virtual Buttons */}
-              {buttons.length > 0 && (
-                <div>
-                  <div className="text-xs font-ui font-semibold uppercase text-cyan/70 mb-4">Buttons</div>
-                  <div className="flex gap-8 flex-wrap mb-6">
-                    {buttons.map((btn: any, i: number) => (
-                      <VirtualButton key={i}
-                        label={btn.label || `BTN ${i + 1}`}
-                        pin={btn.pin || 2}
-                        onPress={() => injectPin(btn.pin || 2, true)}
-                        onRelease={() => injectPin(btn.pin || 2, false)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Virtual Pots */}
+              {/* Digital Twin Controls (Sliders) */}
               {pots.length > 0 && (
-                <div>
-                  <div className="text-xs font-ui font-semibold uppercase text-cyan/70 mb-4">Potentiometers</div>
-                  <div className="space-y-4 mb-6">
+                <div className="mt-6 pt-6 border-t border-cyan/10">
+                  <div className="text-xs font-ui font-semibold uppercase text-cyan/70 mb-4">Digital Twin Inputs (Sliders)</div>
+                  <div className="space-y-4">
                     {pots.map((pot: any, i: number) => (
                       <VirtualPot key={i}
                         label={pot.label || `POT ${i + 1}`}
                         pin={pot.pin || 'A0'}
-                        value={potValues[pot.pin || 'A0'] || 512}
+                        value={Number(pinStates[pot.pin || 'A0'] || 512)}
                         onChange={(v) => {
-                          setPotValues((p) => ({ ...p, [pot.pin || 'A0']: v }));
+                          setPinStates((p) => ({ ...p, [pot.pin || 'A0']: v }));
                           if (simSessionId) {
                             getSocket().emit('pin:set', { sessionId: simSessionId, pin: pot.pin || 'A0', value: v });
                           }
@@ -257,16 +233,6 @@ export default function Simulation() {
                   </div>
                 </div>
               )}
-
-              {/* Pin state waveforms */}
-              <div>
-                <div className="text-xs font-ui font-semibold uppercase text-cyan/70 mb-3">Pin States</div>
-                <div className="space-y-1">
-                  {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((pin) => (
-                    <PinWave key={pin} pin={pin} value={pinStates[pin] ?? false} />
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
