@@ -61,7 +61,7 @@ async function incrementUsage(userId?: string) {
 
 // POST /ai/generate  — full project: circuit + code in one call
 export const generate = async (req: Request, res: Response) => {
-  const { prompt, platform = 'uno' } = req.body;
+  const { prompt, platform = 'uno', socketId } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt is required' });
 
   const allowed = await checkRateLimit(req, res);
@@ -69,8 +69,16 @@ export const generate = async (req: Request, res: Response) => {
 
   logger.info(`AI generate — platform=${platform} prompt="${prompt.slice(0, 80)}..."`);
 
+  const io = (req as any).io;
+  const sendProgress = (step: number, message: string) => {
+    if (socketId && io) {
+      io.to(socketId).emit('ai:progress', { step, message });
+    }
+  };
+
   try {
     // Step 1: Circuit planning (reasoning tier)
+    sendProgress(1, 'Designing circuit plan & mapping pins (DeepSeek-R1)...');
     const circuitResp = await aiService.reasoning(
       SYSTEM_CIRCUIT_PLANNER,
       [{ role: 'user', content: buildCircuitPrompt(prompt, platform as Platform) }],
@@ -85,6 +93,7 @@ export const generate = async (req: Request, res: Response) => {
     const plan = circuitData as any;
 
     // Step 2: Firmware generation (code tier)
+    sendProgress(2, 'Generating embedded firmware source code (Gemma 4)...');
     const codeResp = await aiService.code(
       SYSTEM_CODE_GEN(platform as Platform),
       [{
@@ -94,6 +103,8 @@ export const generate = async (req: Request, res: Response) => {
       6144
     );
 
+    // Step 3: Finalizing and rendering
+    sendProgress(3, 'Finalizing diagram schematic and telemetry metadata...');
     const id = uuid();
     const result = {
       id,

@@ -31,7 +31,7 @@ export const authAPI = {
 };
 
 export const aiAPI = {
-  generate:   (prompt: string, platform: string) => api.post('/ai/generate', { prompt, platform }),
+  generate:   (prompt: string, platform: string, socketId?: string) => api.post('/ai/generate', { prompt, platform, socketId }),
   code:       (prompt: string, platform: string, components: any[], mqttTopics: any[]) =>
                 api.post('/ai/code', { prompt, platform, components, mqttTopics }),
   components: (prompt: string, platform: string) => api.post('/ai/components', { prompt, platform }),

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import { Zap, Copy, Save, ChevronRight, Cpu, Monitor, Check } from 'lucide-react';
 import { useStore } from '../lib/store';
 import { aiAPI, projectsAPI } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
+import { getSocket } from '../hooks/useSocket';
 
 const PLATFORMS = [
   { value: 'uno',         label: 'Arduino Uno',    sub: 'ATmega328P' },
@@ -35,18 +36,33 @@ export default function Workspace() {
   const [error, setError]         = useState('');
   const [copied, setCopied]       = useState(false);
   const [saved, setSaved]         = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
+
+  useEffect(() => {
+    const s = getSocket();
+    const handleProgress = ({ step, message }: { step: number; message: string }) => {
+      setGenerationStep(`Step ${step}/3 — ${message}`);
+    };
+    s.on('ai:progress', handleProgress);
+    return () => {
+      s.off('ai:progress', handleProgress);
+    };
+  }, []);
 
   const generate = async () => {
     if (!prompt.trim()) return;
     setGenerating(true);
     setError('');
+    setGenerationStep('Initiating AI Orchestration pipeline...');
     try {
-      const { data } = await aiAPI.generate(prompt, platform);
+      const socketId = getSocket().id;
+      const { data } = await aiAPI.generate(prompt, platform, socketId);
       setActiveProject(data);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Generation failed');
     } finally {
       setGenerating(false);
+      setGenerationStep('');
     }
   };
 
@@ -281,7 +297,7 @@ export default function Workspace() {
                 <>
                   <div className="w-16 h-16 border-2 border-cyan/20 border-t-cyan rounded-full animate-spin mb-6" />
                   <div className="font-ui font-bold text-cyan mb-2">Generating your IoT project...</div>
-                  <div className="text-xs text-slate-500">AI is planning circuit, generating firmware, validating pins</div>
+                  <div className="text-xs text-slate-400 font-mono tracking-wide mt-1">{generationStep || 'AI is planning circuit, generating firmware, validating pins'}</div>
                 </>
               ) : (
                 <>
