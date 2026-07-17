@@ -20,14 +20,44 @@ export default function Login() {
   const [error, setError]         = useState('');
 
   const submit = async () => {
-    setLoading(true);
     setError('');
+    
+    // Validate inputs
+    const emailTrimmed = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (mode === 'register' && !name.trim()) {
+      setError('Name is required.');
+      return;
+    }
+
+    if (!emailTrimmed) {
+      setError('Email address is required.');
+      return;
+    }
+
+    if (!emailRegex.test(emailTrimmed)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (!password) {
+      setError('Password is required.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
     try {
       let data;
       if (mode === 'login') {
-        ({ data } = await authAPI.login(email, password));
+        ({ data } = await authAPI.login(emailTrimmed, password));
       } else {
-        ({ data } = await authAPI.register(name, email, password, userType, institution));
+        ({ data } = await authAPI.register(name.trim(), emailTrimmed, password, userType, institution.trim()));
       }
       setAuth(data.user, data.token);
       navigate('/workspace');
