@@ -176,12 +176,14 @@ export const generateCode = async (req: Request, res: Response) => {
 };
 
 // POST /ai/diagram  — generate Wokwi diagram from components
+// Uses CODE tier (Qwen2.5-Coder): generating structured diagram JSON is a code
+// task, not a reasoning task. Qwen Coder produces accurate Wokwi schemas faster.
 export const generateDiagram = async (req: Request, res: Response) => {
   const { components, platform = 'uno' } = req.body;
   if (!components) return res.status(400).json({ error: 'components required' });
 
   try {
-    const resp = await aiService.reasoning(
+    const resp = await aiService.code(
       SYSTEM_CIRCUIT_PLANNER,
       [{
         role: 'user',

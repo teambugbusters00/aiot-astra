@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   mongodb:
     image: mongo:7
@@ -41,9 +39,15 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/ai-iot-astra
       - MQTT_BROKER_URL=mqtt://mosquitto:1883
       - JWT_SECRET=${JWT_SECRET}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      - NVIDIA_BASE_URL=${NVIDIA_BASE_URL}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - SILICONFLOW_API_KEY=${SILICONFLOW_API_KEY}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_BASE_URL=${GROQ_BASE_URL}
+      - AI_REASONING_MODEL=${AI_REASONING_MODEL}
+      - AI_CODE_MODEL=${AI_CODE_MODEL}
+      - AI_FAST_MODEL=${AI_FAST_MODEL}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
     volumes:
       - /tmp/aiot-compile:/tmp/aiot-compile

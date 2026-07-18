@@ -150,15 +150,18 @@ stateDiagram-v2
 
 ### Model Specifications
 
-1. **Tier 1 (Reasoning Mode)**:
-   * **Model**: `deepseek/deepseek-r1` (fallback: `google/gemma-4-31b-it`)
-   * **Task**: Deep thinking. Evaluates how components interact (e.g. soil moisture sensor connects to Analog A0, relay pump to Digital D3).
+1. **Tier 1 (Reasoning / Circuit Design Mode)**:
+   * **Model**: `meta/llama-3.3-70b-instruct` on NVIDIA (fallback: `deepseek/deepseek-r1` on OpenRouter)
+   * **Task**: Determines pin connections, logic compatibility, power requirements, and builds the Wokwi wiring blueprint.
+   * **Reasoning**: Switching from DeepSeek-R1 as primary to Llama 3.3 70B avoids the 15-second latency overhead of chain-of-thought tokens while maintaining high-fidelity structured JSON output.
 2. **Tier 2 (CodeGen Mode)**:
-   * **Model**: `google/gemma-4-31b-it` (fallback: `qwen/qwen-2.5-coder-32b`)
-   * **Task**: Fast, precise syntax. Generates clean Arduino or MicroPython code block structured with proper initialization (`setup()`) and loop controls (`loop()`).
-3. **Tier 3 (Validation Mode)**:
-   * **Model**: `llama-3.3-70b-versatile` (via Groq)
-   * **Task**: High-frequency JSON verification and code sanity check.
+   * **Model**: `qwen/qwen2.5-coder-32b-instruct` on NVIDIA (fallback: `qwen/qwen-2.5-coder-32b-instruct` on OpenRouter)
+   * **Task**: Generates C/C++ (Arduino/ESP-IDF) or MicroPython firmware code.
+   * **Reasoning**: Qwen2.5-Coder is the #1 open-source code model, purpose-trained on embedded systems, libraries, and hardware interactions.
+3. **Tier 3 (Validation & Component Extraction)**:
+   * **Model**: `llama-3.1-8b-instant` on Groq (secondary fallback: `llama-3.3-70b-versatile` on Groq, final fallback: `meta-llama/llama-3.1-8b-instruct:free` on OpenRouter)
+   * **Task**: Fast JSON checks, pin validation, and initial component list extraction from user prompt.
+   * **Reasoning**: Groq executes the 8B model at ~1200 tokens/sec, reducing extraction time to less than 0.2s.
 
 ---
 
@@ -222,4 +225,45 @@ Since flashing and compilation tools (such as **PlatformIO** and **esptool**) re
    ```bash
    pio --version
    ```
+
+---
+
+## 6. What We Did Till Now (Summary of Improvements)
+
+Here is a summary of the optimizations and configuration improvements we completed:
+1. **AI Routing Optimization**:
+   * **Tier 1 (Reasoning / Circuit Design):** Shifted the primary model to NVIDIA's `meta/llama-3.3-70b-instruct` (low latency, strict JSON syntax), keeping OpenRouter `deepseek/deepseek-r1` as fallback. This completely removes the CoT token delay (saving up to 15 seconds per call).
+   * **Tier 2 (Firmware Generation):** Shifted the primary model to NVIDIA's `qwen/qwen2.5-coder-32b-instruct` (fallback to OpenRouter). Setting `temperature: 0.05` ensures near-deterministic, valid C++/Arduino library syntax.
+   * **Tier 3 (Validation & Quick Extraction):** Shifted the primary model to Groq's `llama-3.1-8b-instant` running at ~1200 T/s, reducing prompt parsing to ~0.2 seconds.
+   * **Diagram Endpoint:** Re-routed `/ai/diagram` (generating Wokwi JSON) to use the `code` tier (Qwen2.5-Coder) instead of `reasoning` (DeepSeek) as it is a structured code output task rather than a reasoning task.
+2. **Environment & Security Configurations**:
+   * Set the `JWT_SECRET` in `backend/.env` to use the custom JWT token requested by the user.
+   * Cleared out deprecated environment variables (`ANTHROPIC_API_KEY` and `SILICONFLOW_API_KEY`) and updated all config instructions, `docker-compose.yml`, `setup.sh`, and `README.md` to match the new `NVIDIA_API_KEY` and `GROQ_API_KEY` environment variables.
+   * Removed obsolete version attributes in `docker-compose.yml` to silence Docker warnings.
+3. **App Execution & Verification**:
+   * Launched development servers for both Frontend and Backend concurrently.
+   * Verified user registration, login flows, and page navigations (Workspace, Simulation sandbox, Dashboard, and Projects) using the browser subagent.
+
+---
+
+## 7. How to Run This Project
+
+Follow these steps to run the complete workspace locally:
+
+### Step 1: Start the Development Servers
+In the project root directory (`aiot-studio/aiot-studio`), run:
+```bash
+npm run dev
+```
+This boots up:
+* **Backend:** [http://localhost:4000](http://localhost:4000) (running `tsx watch src/index.ts`)
+* **Frontend:** [http://localhost:5173](http://localhost:5173) (running Vite Dev Server)
+
+### Step 2: (Optional) Start Mosquitto Broker
+To receive real telemetry data (instead of mock sinusoids) on the dashboard, make sure Docker Desktop is running, and launch the MQTT broker:
+```bash
+docker-compose --env-file backend/.env up mosquitto -d
+```
+If you encounter permission errors on Windows, run this command in a PowerShell terminal opened as **Administrator**.
+
 

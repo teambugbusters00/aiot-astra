@@ -57,7 +57,7 @@ npm run install:all
 ```bash
 # Backend
 cp backend/.env.example backend/.env
-# Fill in: ANTHROPIC_API_KEY, OPENROUTER_API_KEY, SILICONFLOW_API_KEY
+# Fill in: NVIDIA_API_KEY, OPENROUTER_API_KEY, GROQ_API_KEY
 
 # Frontend
 cp frontend/.env.example frontend/.env
@@ -221,14 +221,14 @@ aiot-studio/
 ```
 User Prompt
      │
-     ├─► Tier 1: DeepSeek-R1 (OpenRouter)     ← circuit planning, component selection
-     │         └─ Fallback: Claude claude-sonnet-4-6
+     ├─► Tier 1: Llama 3.3 70B (NVIDIA)         ← circuit planning, component selection
+     │         └─ Fallback: DeepSeek-R1 (OpenRouter)
      │
-     ├─► Tier 2: Qwen2.5-Coder 7B (SiliconFlow) ← firmware generation
-     │         └─ Fallback: Claude claude-sonnet-4-6
+     ├─► Tier 2: Qwen2.5-Coder 32B (NVIDIA)     ← firmware generation
+     │         └─ Fallback: Qwen2.5-Coder 32B (OpenRouter)
      │
-     └─► Tier 3: Llama 3.2 8B (OpenRouter)    ← validation, fast tasks
-               └─ Fallback: Claude Haiku
+     └─► Tier 3: Llama 3.1 8B Instant (Groq)    ← validation, component extraction
+               └─ Fallback: Llama 3.3 70B (Groq)
 ```
 
 ---
