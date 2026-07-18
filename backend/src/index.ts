@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import http from 'http';
+import path from 'path';
 import { Server as SocketServer } from 'socket.io';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -55,6 +56,10 @@ app.use((req, _res, next) => {
 // Global rate limiter
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 500 }));
 
+// Serve static assets from frontend build output
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
+
 // ── Routes ────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);
 app.use('/ai', aiRoutes);
@@ -76,13 +81,13 @@ app.get('/health', (_req, res) => {
   });
 });
 
-app.get('/', (_req, res) => {
-  res.json({
-    name: 'AI IoT Astra API',
-    version: '1.0.0',
-    docs: '/health',
-    endpoints: ['/auth', '/ai', '/simulation', '/mqtt', '/deploy', '/projects', '/serial', '/billing'],
-  });
+// Fallback for React Router (Single Page Application routing)
+app.get('*', (_req, res, next) => {
+  // If request is for an API endpoint that wasn't found, pass to 404
+  if (_req.path.startsWith('/auth') || _req.path.startsWith('/ai') || _req.path.startsWith('/simulation') || _req.path.startsWith('/mqtt') || _req.path.startsWith('/deploy') || _req.path.startsWith('/projects') || _req.path.startsWith('/serial') || _req.path.startsWith('/billing')) {
+    return next();
+  }
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // 404 handler

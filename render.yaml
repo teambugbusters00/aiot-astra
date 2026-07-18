@@ -1,19 +1,16 @@
 services:
-  # ── Backend Web Service ─────────────────────────────────────────────
+  # ── Unified Web Service (Backend + Frontend served together) ─────────
   - type: web
-    name: ai-iot-astra-backend
+    name: aiot-astra
     env: node
     plan: free
-    rootDir: backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm run install:all && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 4000
-      - key: FRONTEND_URL
-        value: https://ai-iot-astra-frontend.onrender.com # Update to your frontend URL once deployed
       # The following credentials must be filled in the Render Dashboard:
       - key: MONGODB_URI
         sync: false
@@ -37,14 +34,3 @@ services:
         value: qwen/qwen2.5-coder-32b-instruct
       - key: AI_FAST_MODEL
         value: llama-3.1-8b-instant
-
-  # ── Frontend Static Site ────────────────────────────────────────────
-  - type: web
-    name: ai-iot-astra-frontend
-    env: static
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    publishPath: backend/public
-    envVars:
-      - key: VITE_API_URL
-        value: https://ai-iot-astra-backend.onrender.com # Update to your backend Web Service URL
