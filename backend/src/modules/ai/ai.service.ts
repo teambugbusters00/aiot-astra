@@ -1,5 +1,8 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
 import { logger } from '../../config/logger';
+
+dotenv.config();
 
 // ── NVIDIA AI Endpoints (primary — reasoning + code at low latency) ──
 const nvidia = axios.create({
@@ -64,7 +67,7 @@ async function callReasoning(system: string, messages: LLMMessage[], maxTokens =
   if (process.env.NVIDIA_API_KEY) {
     try {
       const resp = await nvidia.post('/chat/completions', {
-        model: process.env.AI_REASONING_MODEL || 'meta/llama-3.3-70b-instruct',
+        model: process.env.AI_REASONING_MODEL || 'meta/llama-3.1-8b-instruct',
         messages: [{ role: 'system', content: system }, ...messages],
         max_tokens: maxTokens,
         temperature: 0.1,

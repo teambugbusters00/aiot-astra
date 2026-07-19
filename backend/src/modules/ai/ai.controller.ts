@@ -95,6 +95,7 @@ export const generate = async (req: Request, res: Response) => {
     );
 
     const circuitData = safeParseJSON(circuitResp.content);
+    console.log('circuitData:', circuitData);
     if (!circuitData) {
       return res.status(500).json({ error: 'AI returned invalid circuit JSON', raw: circuitResp.content.slice(0, 500) });
     }
