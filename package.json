@@ -4,14 +4,15 @@
   "description": "AI IoT Astra — Full-stack AI-powered IoT Development Platform",
   "private": true,
   "scripts": {
-    "dev":            "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend":    "cd backend && npm run dev",
-    "dev:frontend":   "cd frontend && npm run dev",
-    "install:all":    "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build":          "cd frontend && npm run build && cd ../backend && npm run build",
-    "build:render":   "npm run install:all && npm run build",
-    "start":          "cd backend && npm start",
-    "lint":           "cd backend && npm run lint && cd ../frontend && npm run lint"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "audit:all": "npm audit fix && cd backend && npm audit fix && cd ../frontend && npm audit fix",
+    "build": "cd frontend && npm run build && cd ../backend && npm run build",
+    "build:render": "npm run install:all && npm run build",
+    "start": "cd backend && npm start",
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
